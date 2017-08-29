@@ -11,7 +11,7 @@ The county also ranks third for total losses with more than 100,000 total losses
 
 As a city, Houston has received about $1.6 billion in flood mitigation assistance. The fourth-largest amount in the country.
 
-From FEMA's [data page](https://www.fema.gov/policy-claim-statistics-flood-insurance). From 1978 to March 2017.
+From FEMA's National Flood Insurance Program [data page](https://www.fema.gov/policy-claim-statistics-flood-insurance). From 1978 to March 2017.
 
 ```{r setup, include=FALSE, warning=F, message=F, fig.width=10, fig.height=6}
 
@@ -97,43 +97,5 @@ datatable(all_data_perstuff, extensions="Buttons", options=list(
   dom="Bfrtip",
   buttons=c("csv", "excel", "pdf")
 ))
-```
-
-```{r maps, echo=FALSE, warning=F, message=F, fig.width=10, fig.height=6}
-geo_county <- map_data("county")
-names(geo_county) <- c("long", "lat", "group", "order", "state", "county")
-geo_state <- map_data("state")
-
-gfx_data <- merge(geo_county, all_data, by = c("state", "county"))
-gfx_data <- gfx_data[order(gfx_data$order), ]
-
-
-# discretise variables of interest
-gfx_data$policies_gfx <- cut(gfx_data$policies, breaks = c(1, 30, 100, 300, 
-                                                           1000, 10000, 4e+05), labels = c("1 - 30", "30 - 100", "100 - 300", "300 - 1k", 
-                                                                                           "1k - 10k", "10k - 400k"))
-gfx_data$payments_gfx <- cut(gfx_data$total_pay/10^6, breaks = c(0, 0.05, 0.4, 
-                                                                 1.7, 6.3, 50, 7300), labels = c("0 - 50k", "50k - 400k", "400k - 1.7M", 
-                                                                                                 "1.7M - 6.3M", "6.3M - 50M", "50M - 7.3B"))
-
-plot_map <- ggplot(data = gfx_data) + geom_polygon(aes(long, lat, group = group, 
-                                                       fill = policies_gfx)) + geom_path(data = geo_state, aes(x = long, y = lat, 
-                                                                                                               group = group), fill = NA, na.rm = TRUE) + labs(list(title = "NFIP Policies Per County", 
-                                                                                                                                                                    x = NULL, y = NULL)) + guides(fill = guide_legend(title = "Policies Per County")) + 
-  scale_fill_brewer(palette = "Accent") + coord_fixed()
-# save plot
-#png("nfip_policies.png", width = 10, height = 8, units = "in", res = 72)
-print(plot_map)
-#garbage <- dev.off()
-
-plot_map <- ggplot(data = gfx_data) + geom_polygon(aes(long, lat, group = group, 
-                                                       fill = payments_gfx)) + geom_path(data = geo_state, aes(x = long, y = lat, 
-                                                                                                               group = group), fill = NA, na.rm = TRUE) + labs(list(title = "NFIP Payments Per County (US$)", 
-                                                                                                                                                                    x = NULL, y = NULL)) + guides(fill = guide_legend(title = "Payments Per County (US$)")) + 
-  scale_fill_brewer(palette = "Accent") + coord_fixed()
-#png("nfip_payments.png", width = 10, height = 8, units = "in", res = 72)
-print(plot_map)
-#garbage <- dev.off()
-
 ```
 

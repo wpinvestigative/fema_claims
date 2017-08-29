@@ -19,8 +19,8 @@ library(tidyverse)
 library(DT)
 library(stringr)
 # required functions
-source("analyze_policies.R")  # function to preprocess policies data
-source("analyze_claims.R")  # function to preprocess claims data
+source("scripts/analyze_policies.R")  # function to preprocess policies data
+source("scripts/analyze_claims.R")  # function to preprocess claims data
 
 policies <- Fn_Analyze_Policies()
 claims <- Fn_Analyze_Claims()
@@ -98,4 +98,3 @@ datatable(all_data_perstuff, extensions="Buttons", options=list(
   buttons=c("csv", "excel", "pdf")
 ))
 ```
-

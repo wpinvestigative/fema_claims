@@ -57,6 +57,8 @@ datatable(all_data_policies, extensions="Buttons", options=list(
 
 # City summary
 
+* Limiting to the 3,000 towns that received the most money *
+
 ```{r cities, echo=F, warning=F, message=F}
 claims <- read.delim("data/formatted_claims_all.txt", as.is = TRUE)
 claims <- filter(claims, !grepl("COUNTY*", community, perl=T))

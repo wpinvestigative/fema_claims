@@ -13,7 +13,7 @@ As a city, Houston has received about $1.6 billion in flood mitigation assistanc
 
 From FEMA's [data page](https://www.fema.gov/policy-claim-statistics-flood-insurance). From 1978 to March 2017.
 
-```{r setup, echo=FALSE, warning=F, message=F, fig.width=10, fig.height=6}
+```{r setup, include=FALSE, warning=F, message=F, fig.width=10, fig.height=6}
 
 library(tidyverse)
 library(DT)
@@ -63,13 +63,15 @@ claims <- filter(claims, !grepl("COUNTY*", community, perl=T))
 claims$community <- gsub(", TOWN OF", "", claims$community)
 claims$community <- gsub(", CITY OF", "", claims$community)
 
-claims <- arrange(claims, desc(total_pay))
+claims <- arrange(claims, desc(total_pay)) 
+claims <- claims[1:3000,]
 
 datatable(claims, extensions="Buttons", options=list(
   dom="Bfrtip",
   buttons=c("csv", "excel", "pdf")))
 
 ```
+
 # Square miles
 
 ```{r table3, echo=F, warning=F, message=F}

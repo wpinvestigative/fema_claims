@@ -7,9 +7,9 @@ Fn_Analyze_Claims <- function(raw_claims_file = "data/nfip_claims_raw.txt",
   
   
   if(file.exists("data/formatted_claims_county.txt")) {
-    cat("reading claims by county file dated - ", 
-        as.character(file.info("formatted_claims_county.txt")$mtime), 
-        "\n")
+    #cat("reading claims by county file dated - ", 
+    #    as.character(file.info("formatted_claims_county.txt")$mtime), 
+   #     "\n")
     out_claims_agg <- read.delim("data/formatted_claims_county.txt", as.is = TRUE)
     
     return (out_claims_agg)
@@ -20,9 +20,9 @@ Fn_Analyze_Claims <- function(raw_claims_file = "data/nfip_claims_raw.txt",
     
     # read data on claims
     # data from http://bsa.nfipstat.fema.gov/reports/1040.htm - claims
-    cat("reading raw data file dated - ", 
-        as.character(file.info("data/nfip_claims_raw.txt")$mtime), 
-        "\n")
+    #cat("reading raw data file dated - ", 
+    #    as.character(file.info("data/nfip_claims_raw.txt")$mtime), 
+    #    "\n")
     
     data_claims <- readLines(raw_claims_file)
     

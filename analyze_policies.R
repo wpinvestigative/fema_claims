@@ -141,9 +141,9 @@ Fn_Analyze_Policies_All <- function(raw_policies_file = "data/nfip_policies_raw.
                                 output_policies_aggregated_file = "data/formatted_policies_county.txt") {  
   
   if(file.exists("data/formatted_policies_county.txt")) {
-    cat("reading policies by county file dated - ", 
-        as.character(file.info("data/formatted_policies_county.txt")$mtime), 
-        "\n")
+    #cat("reading policies by county file dated - ", 
+    #    as.character(file.info("data/formatted_policies_county.txt")$mtime), 
+   #     "\n")
     out_policies_agg <- read.delim("data/formatted_policies_county.txt", as.is = TRUE)
     
     return (out_policies_agg)
@@ -153,9 +153,9 @@ Fn_Analyze_Policies_All <- function(raw_policies_file = "data/nfip_policies_raw.
     
     # read data on policies
     # data from http://bsa.nfipstat.fema.gov/reports/1011.htm
-    cat("reading raw data file dated - ", 
-        as.character(file.info("data/nfip_policies_raw.txt")$mtime), 
-        "\n")
+    #cat("reading raw data file dated - ", 
+    #    as.character(file.info("data/nfip_policies_raw.txt")$mtime), 
+    #    "\n")
     
     data_policies <- readLines(raw_policies_file)
     

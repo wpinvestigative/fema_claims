@@ -1,0 +1,135 @@
+---
+title: "Policy & Claims for Flood Insurance"
+author: "Andrew Ba Tran"
+date: "8/28/2017"
+output: html_document
+---
+
+Harris County, which includes Houston, has received more than $3 billion in flood losses from the Federal Emergency Management Agency since 1976. It ranks third behind Orleans and Jefferson counties in Lousiana, which sustained significant damage during Hurricane Katrina. 
+
+The county also ranks third for total losses with more than 100,000 total losses recorded— almost double the fourth-ranking Miami-Dade County.
+
+As a city, Houston has received about $1.6 billion in flood mitigation assistance. The fourth-largest amount in the country.
+
+From FEMA's [data page](https://www.fema.gov/policy-claim-statistics-flood-insurance). From 1978 to March 2017.
+
+```{r setup, echo=FALSE, warning=F, message=F, fig.width=10, fig.height=6}
+
+library(tidyverse)
+library(DT)
+library(stringr)
+# required functions
+source("analyze_policies.R")  # function to preprocess policies data
+source("analyze_claims.R")  # function to preprocess claims data
+
+policies <- Fn_Analyze_Policies()
+claims <- Fn_Analyze_Claims()
+
+all_data <- merge(policies, claims, by = c("state", "county"), all = TRUE)
+# convert state and county names to be consistent with ggplot2
+all_data$state <- tolower(all_data$state)
+all_data$county <- tolower(all_data$county)
+# remove ' county' and ' parish' from county names
+all_data$county <- gsub(" county", "", all_data$county)
+all_data$county <- gsub(" parish", "", all_data$county)
+```
+
+# Losses
+
+```{r table1, echo=F}
+all_data_losses <- select(all_data, State=state, County=county, `Total Losses` = total_loss, `Closed losses` = closed_loss, `Open losses`=open_loss, `CWOP losses`=cwop_loss, `Total Payments`=total_pay) %>% 
+  arrange(desc(`Total Payments`))
+datatable(all_data_losses, extensions="Buttons", options=list(
+  dom="Bfrtip",
+  buttons=c("csv", "excel", "pdf")
+))
+```
+
+# Policy stats
+
+```{r table2, echo=F}
+all_data_policies <- select(all_data, State=state, County=county, `Policies In-force`=policies, `Insurance In-force whole`=insurance, `Written Premium in-force`=premium) %>% 
+  arrange(desc(`Written Premium in-force`))
+datatable(all_data_policies, extensions="Buttons", options=list(
+  dom="Bfrtip",
+  buttons=c("csv", "excel", "pdf")))
+```
+
+# City summary
+
+```{r cities, echo=F, warning=F, message=F}
+claims <- read.delim("data/formatted_claims_all.txt", as.is = TRUE)
+claims <- filter(claims, !grepl("COUNTY*", community, perl=T))
+claims$community <- gsub(", TOWN OF", "", claims$community)
+claims$community <- gsub(", CITY OF", "", claims$community)
+
+claims <- arrange(claims, desc(total_pay))
+
+datatable(claims, extensions="Buttons", options=list(
+  dom="Bfrtip",
+  buttons=c("csv", "excel", "pdf")))
+
+```
+# Square miles
+
+```{r table3, echo=F, warning=F, message=F}
+all_data$state_county <- paste(all_data$state, all_data$county)
+pop_land <- read_csv("data/DEC_10_SF1_GCTPH1.US05PR_with_ann.csv", skip=1)
+pop_land$state <- gsub(".*United States - ", "", pop_land$`Geographic area`)
+pop_land$state <- str_to_lower(gsub(" -.*", "", pop_land$state))
+
+pop_land$county <- str_to_lower(gsub(" County", "", pop_land$`Geographic area_1`))
+pop_land$state_county <- paste(pop_land$state, pop_land$county)
+
+all_data <- left_join(all_data, pop_land)
+colnames(all_data) <- make.names(colnames(all_data))
+
+all_data$per_sqft_total <- round(all_data$total_pay / all_data$Area.in.square.miles...Total.area,2)
+all_data$per_cap_total <- round(all_data$total_pay / as.numeric(all_data$Population),2)
+
+all_data_perstuff <- select(all_data, state, county, `Per square mile` = per_sqft_total, `Per person` = per_cap_total)
+
+datatable(all_data_perstuff, extensions="Buttons", options=list(
+  dom="Bfrtip",
+  buttons=c("csv", "excel", "pdf")
+))
+```
+
+```{r maps, echo=FALSE, warning=F, message=F, fig.width=10, fig.height=6}
+geo_county <- map_data("county")
+names(geo_county) <- c("long", "lat", "group", "order", "state", "county")
+geo_state <- map_data("state")
+
+gfx_data <- merge(geo_county, all_data, by = c("state", "county"))
+gfx_data <- gfx_data[order(gfx_data$order), ]
+
+
+# discretise variables of interest
+gfx_data$policies_gfx <- cut(gfx_data$policies, breaks = c(1, 30, 100, 300, 
+                                                           1000, 10000, 4e+05), labels = c("1 - 30", "30 - 100", "100 - 300", "300 - 1k", 
+                                                                                           "1k - 10k", "10k - 400k"))
+gfx_data$payments_gfx <- cut(gfx_data$total_pay/10^6, breaks = c(0, 0.05, 0.4, 
+                                                                 1.7, 6.3, 50, 7300), labels = c("0 - 50k", "50k - 400k", "400k - 1.7M", 
+                                                                                                 "1.7M - 6.3M", "6.3M - 50M", "50M - 7.3B"))
+
+plot_map <- ggplot(data = gfx_data) + geom_polygon(aes(long, lat, group = group, 
+                                                       fill = policies_gfx)) + geom_path(data = geo_state, aes(x = long, y = lat, 
+                                                                                                               group = group), fill = NA, na.rm = TRUE) + labs(list(title = "NFIP Policies Per County", 
+                                                                                                                                                                    x = NULL, y = NULL)) + guides(fill = guide_legend(title = "Policies Per County")) + 
+  scale_fill_brewer(palette = "Accent") + coord_fixed()
+# save plot
+#png("nfip_policies.png", width = 10, height = 8, units = "in", res = 72)
+print(plot_map)
+#garbage <- dev.off()
+
+plot_map <- ggplot(data = gfx_data) + geom_polygon(aes(long, lat, group = group, 
+                                                       fill = payments_gfx)) + geom_path(data = geo_state, aes(x = long, y = lat, 
+                                                                                                               group = group), fill = NA, na.rm = TRUE) + labs(list(title = "NFIP Payments Per County (US$)", 
+                                                                                                                                                                    x = NULL, y = NULL)) + guides(fill = guide_legend(title = "Payments Per County (US$)")) + 
+  scale_fill_brewer(palette = "Accent") + coord_fixed()
+#png("nfip_payments.png", width = 10, height = 8, units = "in", res = 72)
+print(plot_map)
+#garbage <- dev.off()
+
+```
+

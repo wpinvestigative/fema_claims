@@ -5,6 +5,12 @@ date: "8/28/2017"
 output: html_document
 ---
 
+This is scraped and sorted data from FEMA's website that was used as part of the Washington Post story "
+**[Houston’s ‘Wild West’ growth — How the city's development may have contributed to devastating flooding](https://www.washingtonpost.com/graphics/2017/investigations/harvey-urban-planning/)**"
+
+The [repo](https://github.com/wpinvestigative/fema_claims) where the scripts and data can be found on Github. The [data](https://github.com/wpinvestigative/fema_claims/tree/master/data) is also available in raw and summarized formats.
+
+
 Harris County, which includes Houston, has received more than $3 billion in flood losses from the Federal Emergency Management Agency since 1976. It ranks third behind Orleans and Jefferson counties in Lousiana, which sustained significant damage during Hurricane Katrina. 
 
 The county also ranks third for total losses with more than 100,000 total losses recorded— almost double the fourth-ranking Miami-Dade County.
